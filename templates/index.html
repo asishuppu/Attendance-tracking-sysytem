@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="static/bootstrap.min.css">
+  <link rel="stylesheet" href="static/font-awesome.min.css">
+  <script src="static/jquery.min.js"></script>
+  <script src="static/bootstrap.min.js"></script>
+<title>Capgemini Attendance</title>
+</head>
+<body>
+  <div class="nav nav-bar" style="border-bottom: 1px solid silver;box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)">
+    <div style="margin: 10px;">
+        <img src="static/appimages/logo.svg">
+        <label style="color: #0070ad; font-size: 18px;margin-left: 20px;">Attendance Tracking System</label>
+        <label style="color:#0070ad ;font-size: 18px;float:right;" id="datetime"></label>
+    </div>
+    
+  </div>
+  <form method="POST" enctype="multipart/form-data" id="myForm">
+  <div style="display:flex; margin-top: 25px;margin-left: 1%;margin-right: 1%;">
+      <div style="width:50%;margin: 10px;box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);">
+        <center>
+            <div  style="margin-left: 40%;margin-top: 10px;">
+              <div id="vdiv">
+                <div style="display: flex;">
+                  <img src="static/appimages/vc.png" style="width:35px; height: 35px;">  
+                  <h5 style="color:#0070ad ;margin: 10px;">Live Video</h5>
+                </div>
+               
+              </div>
+              <div id="pdiv">
+                <div style="display: flex;">
+                <img src="static/appimages/pic.png" style="width:35px; height: 35px;">  
+                <h5 style="color:#0070ad ;margin: 10px;">Captured Image</h5>
+                </div>
+              </div>
+               
+            </div>  
+        </center>   
+        <div class="ocrloader">
+            <em></em>
+            <div>
+              <video autoplay="true" id="videoElement"  width=560 height=420 style="display: none;">	
+              </video>
+              <canvas id="canvasOutput" width=560 height=420 style="width:100%; height: auto;border: 5px solid silver;" ></canvas>
+              <img id="imageOutput"  style="width:100%;height: auto; border: 5px solid silver;"width=560 height=420> 
+            </div>
+           
+        <span id="scanline"></span>
+          
+       </div>
+   </div>
+  </form>
+   <div style="width:50%;margin: 10px;box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);">
+    <center>
+      <div style="border-bottom: 5px solid silver;">
+        <h3 style="color:#3498DB ;margin: 10px;">Result</h3>
+      </div>
+      <img id="pros" src="static/appimages/pros.gif" width=200 height="200"/>
+      <img id="oops" src="static/appimages/opps.png" width=200 height="200"/>
+      <div id="resulttable"></div>
+      <div style="display: flex;">
+        <form id="fc" action='/correct' method='post'>
+          <br>
+          <input style="visibility: hidden;" type="text" name="id" id="inid">
+          <input style="margin: 10px;" type='submit' value="Correct" class='btn btn-primary'>
+        </form>
+        <form id="fm" action='/wrong' method='post'>
+          <br>
+          <input  style="margin: 10px;" type='submit' value="Mis Matched" class='btn btn-primary'>
+        </form>
+        
+        <!-- <a href="/" style="margin-top: 30px;margin-bottom: 10px; float: right;" type="button"  class="btn btn-primary">Go Back</a>  -->
+      </div>
+      
+     
+    </center>
+  </div>
+
+  </div>
+
+  <script type="text/javascript">
+    document.getElementById("scanline").style.visibility = "hidden";
+    document.getElementById("imageOutput").style.display = "none";
+    document.getElementById("fc").style.display = "none";
+    document.getElementById("fm").style.display = "none";
+    document.getElementById("pdiv").style.display = "none";
+    document.getElementById("oops").style.display = "none";
+    var Module = {
+        preRun: [function() {
+          Module.FS_createPreloadedFile('/', 'haarcascade_frontalface_default.xml', 'static/haarcascade_frontalface_default.xml', true, false);
+        
+        }]
+      };
+    var videoenable = '{{ videonable }}';
+    if(videoenable=="yes"){
+      var inputvideo = document.querySelector("#videoElement");  
+      window.onload=startcamera;
+    }
+    if(videoenable=="no"){
+      document.getElementById("canvasOutput").style.display = "none";
+      document.getElementById("imageOutput").style.display = "";
+    }
+    
+     function startcamera(){
+      if (navigator.mediaDevices.getUserMedia) {
+      navigator.mediaDevices.getUserMedia({ video: true })
+        .then(function (stream) {
+          inputvideo.srcObject = stream;
+          getface();
+          
+        })
+        .catch(function (err0r) {
+          console.log("Something went wrong!");
+        });
+    }
+     }
+    function stopcamera(){
+      var mystream = inputvideo.srcObject;
+          var tracks = mystream.getTracks();
+
+         for (var i = 0; i < tracks.length; i++) {
+           var track = tracks[i];
+           track.stop();
+           }
+
+          inputvideo.srcObject = null;
+         
+
+    }
+  
+    function getface(){
+    let video = document.getElementById('videoElement');
+    let src = new cv.Mat(video.height, video.width, cv.CV_8UC4);
+    let dst = new cv.Mat(video.height, video.width, cv.CV_8UC4);
+    let gray = new cv.Mat();
+    let cap = new cv.VideoCapture(video);
+    let faces = new cv.RectVector();
+    let classifier = new cv.CascadeClassifier();
+    
+    // load pre-trained classifiers
+    console.log("taking file!");
+    classifier.load('haarcascade_frontalface_default.xml');
+    console.log("file loaded");
+    const FPS = 30;
+    function processVideo() {
+        try {
+            let begin = Date.now();
+            // start processing.
+            cap.read(src);
+            src.copyTo(dst);
+            cv.cvtColor(dst, gray, cv.COLOR_RGBA2GRAY, 0);
+            // detect faces.
+            classifier.detectMultiScale(gray, faces, 1.1, 4);
+            // draw faces.
+            for (let i = 0; i < faces.size(); ++i) {
+                let face = faces.get(i);
+                let point1 = new cv.Point(face.x, face.y);
+                let point2 = new cv.Point(face.x + face.width, face.y + face.height);
+                cv.rectangle(dst, point1, point2, [255, 0, 0, 255]);
+            }
+
+            cv.imshow('canvasOutput', dst);
+             document.getElementById("scanline").style.visibility = "visible";
+             if(faces.size()>0){
+             src.delete();
+             dst.delete();
+             gray.delete();
+             faces.delete();
+             document.getElementById("scanline").style.visibility = "hidden";
+             classifier.delete();
+             stopcamera();
+             document.getElementById("vdiv").style.display = "none";
+             document.getElementById("pdiv").style.display = "";
+             takepicture();
+            // window.location.replace("http://localhost:5000/result");
+             return;
+
+            }
+            // schedule the next one.
+            let delay = 1000/FPS - (Date.now() - begin);
+            setTimeout(processVideo, delay);
+        } catch (err) {
+            console.log(err)
+        }
+    };
+    
+    // schedule the first one.
+    setTimeout(processVideo, 0);
+    
+    } 
+function takepicture() {
+
+    canvas = document.getElementById('canvasOutput');
+    photo = document.getElementById('imageOutput');
+    var data = canvas.toDataURL('image/jpg');
+    photo.setAttribute('src', data);
+    document.getElementById("canvasOutput").style.display = "none";
+    document.getElementById("imageOutput").style.display = "";
+    console.log("Uploading...")
+    var image = document.getElementById('imageOutput').src;
+    var form = document.getElementById('myForm');
+    var formData = new FormData(form);
+    formData.append("file", data);
+    var xmlhttp = new XMLHttpRequest();
+    xmlhttp.open("POST", "http://localhost:5000/result");
+
+    // check when state changes, 
+    xmlhttp.onreadystatechange = function() {
+
+    if(xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+      var indata =innerHTML=xmlhttp.responseText ;
+      var lsdata = indata.split(',');
+      document.getElementById("pros").style.display = "none";
+      if(lsdata[0]=="found"){
+        document.getElementById("inid").value=lsdata[1];
+        document.getElementById('resulttable').innerHTML=lsdata[2];
+        document.getElementById("fc").style.display = "";
+        document.getElementById("fm").style.display = "";
+      }
+      if(lsdata[0]=="notfound"){
+       
+        window.location.replace("/saveimage/"+lsdata[1]);
+      }
+      if(lsdata[0]=="notproper"){
+        document.getElementById("oops").style.display = "";
+        document.getElementById('resulttable').innerHTML=lsdata[1];
+      }
+      if(lsdata[0]=="nodata"){
+        document.getElementById("oops").style.display = "";
+        document.getElementById('resulttable').innerHTML=lsdata[1];
+      }
+        
+      }
+    }
+
+    xmlhttp.send(formData);
+    console.log(formData.get('file'));
+  }
+  
+    </script>
+    <script async src="static/opencv.js" type="text/javascript">
+    </script>
+    <script src="static/utils.js" type="text/javascript">
+    </script>
+</body>
+</html>
+
+<style>
+#emp {
+  font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+#emp td, #customers th {
+  border: 1px solid #ddd;
+  padding: 8px;
+}
+
+#emp tr:nth-child(even){background-color: #f2f2f2;}
+
+#emp tr:hover {background-color: #ddd;}
+
+#emp th {
+  padding-top: 12px;
+  padding-bottom: 12px;
+  text-align: left;
+  background-color: #4CAF50;
+  color: white;
+}
+#matchtext{
+  color: #4CAF50;
+}
+body{
+  font-family: "open sans";
+}
+</style>
+<script>
+  var dt=new Date();
+  document.getElementById("datetime").innerHTML=dt.toLocaleDateString();
+</script>

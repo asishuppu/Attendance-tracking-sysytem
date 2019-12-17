@@ -1,0 +1,2 @@
+install python3.6 64 bit version (mandetory)
+open cmd and run python -m pip install  location_of_file/dlib-19.7.0-cp36-cp36m-win_amd64.whl    i.e ex C://users/downloads/dlib-19.7.0-cp36-cp36m-win_amd64.whl

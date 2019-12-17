@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="../static/bootstrap.min.css">
+  <link rel="stylesheet" href="../static/font-awesome.min.css">
+  <script src="../static/jquery.min.js"></script>
+  <script src="../static/bootstrap.min.js"></script>
+<title>Capgemini Attendance</title>
+</head>
+<body>
+  <div class="nav nav-bar" style="border-bottom: 1px solid silver;box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)">
+    <div style="margin: 10px;">
+        <img src="../static/appimages/logo.svg">
+        <label style="color: #0070ad; font-size: 18px;margin-left: 20px;">Attendance Tracking System</label>
+        <label style="color:#0070ad ;font-size: 18px;float:right;" id="datetime"></label>
+    </div>
+  </div>
+  <div style="display:flex; margin-top: 25px;margin-left: 1%;margin-right: 1%;">
+    <div style="width:50%;margin: 10px;box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);">
+      <center>
+          <div style="display: flex;margin-left: 40%;margin-top: 10px;">
+              <img src="../static/appimages/pic.png" style="width:35px; height: 35px;">  
+              <h5 style="color:#0070ad ;margin: 10px;">Captured Image</h5>
+          </div>   
+      </center>   
+      <div class="ocrloader">
+          <em></em>
+          <div>
+            <img id="imageOutput" src="../static/Training/{{imgn}}" style="width:100%;height: auto; border: 5px solid silver;"width=560 height=480> 
+          </div>
+         
+      <span id="scanline"></span>
+        
+     </div>
+ </div>
+ <div style="width:50%;margin: 10px;box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);">
+  <center>
+    <div>
+      <h3 style="color:#3498DB ;margin: 10px;">Enter Employee Details</h3>    
+        </div>
+        
+          <img src="../static/appimages/emform.png" style="width:50px; height: 50px;">  
+         <div style="margin: 10px;;">
+          <form action="/saveimage/{{imgn}}" method="post">
+          <input style="margin: 5px;" class="form-control" name="eid" type="number" placeholder="Enter Employee Id" required>
+          <input style="margin: 5px;" class="form-control" name="ename" type="text" placeholder="Enter Employee Name" required>
+          <input style="margin: 5px;" class="form-control" name="eloc" type="text" placeholder="Enter Employee Location" required>
+          <input style="margin: 5px;" class="form-control" name="ebu" type="text" placeholder="Enter Employee BU" required>
+         
+             <input class="btn btn-primary" style="width: 100%;margin: 5px;" type="submit" title="Save">
+          </form>
+         </div>  
+          
+     
+      <br>
+      </center>
+    </div>
+  
+</div>
+    
+</body>
+
+</html>
+<script>
+  var dt=new Date();
+  document.getElementById("datetime").innerHTML=dt.toLocaleDateString();
+</script>
+

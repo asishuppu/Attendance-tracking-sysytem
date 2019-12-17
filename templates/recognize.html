@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+
+<title>Capture</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+</head>
+
+<body>
+    <div style="height: 50px;background-color:#3498DB">
+        <center>
+          <h1 style="color: white;margin-top:25px;">Face Detection</h1>
+        </center>
+          </div>
+        
+          <div style="box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);margin-left:26%;margin-right: 26%; ">
+              <center>
+            <h3 style="color:#3498DB ;margin: 10px;">recognize Face Result</h3>
+            <h4>{{recresult}}</h4>
+          </center>
+          <form action="/capture" method="post">
+            <button class="btn btn-primary" style="width: 100%" type="submit">Re-Capture</button>
+        </form>
+        <br>
+          </div>
+    
+</body>
+
+</html>
+
+
